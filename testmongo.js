@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 // routes will go here
 
 // Default route:
-app.get('/', function(req, res) {
+/*app.get('/', function(req, res) {
   const myquery = req.query;
   var outstring = 'Starting... ';
   res.send(outstring);
@@ -53,4 +53,4 @@ async function run() {
   }
 }
 run().catch(console.dir);
-});
+});*/
