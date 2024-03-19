@@ -65,6 +65,30 @@ app.get('/', function(req, res) {
     `);
 });
 
+// Register route
+app.post('/register', async (req, res) => {
+    try {
+        const database = client.db('WesleyDB'); // Change to your database name
+        const users = database.collection('users');
+        
+        // Extract username and password from request body
+        const { register_username, register_password } = req.body;
+        
+        // Check if the username already exists in the database
+        const existingUser = await users.findOne({ username: register_username });
+        if (existingUser) {
+            return res.status(400).send('Username already exists');
+        }
+        
+        // If username doesn't exist, insert the new user into the database
+        await users.insertOne({ username: register_username, password: register_password });
+        res.send('Registration successful!');
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).send('Error registering user. Please try again.');
+    }
+});
+
 // Route to set cookies
 app.get('/setcookie', function (req, res) {
     console.log('setcookie');
