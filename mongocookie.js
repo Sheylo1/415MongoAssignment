@@ -31,6 +31,16 @@ client.connect(err => {
 
 // Homepage route
 app.get('/', function(req, res) {
+    // Check if the authentication cookie exists
+    const authCookie = req.cookies.auth;
+
+    let authMessage = '';
+    if (authCookie) {
+        authMessage = 'You are authenticated.';
+    } else {
+        authMessage = 'You are not authenticated.';
+    }
+
     res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -42,6 +52,9 @@ app.get('/', function(req, res) {
     <body>
         <h1>Welcome!</h1>
         <h2>Login or Register</h2>
+        
+        <!-- Display authentication status -->
+        <p>${authMessage}</p>
         
         <form action="/login" method="post">
             <h3>Login</h3>
@@ -60,6 +73,9 @@ app.get('/', function(req, res) {
             <input type="password" id="register_password" name="register_password" required><br>
             <input type="submit" value="Register">
         </form>
+
+        <!-- Button to route to Cookie Report -->
+        <a href="/cookie-report"><button>View Active Cookies</button></a>
     </body>
     </html>
     `);
@@ -82,17 +98,102 @@ app.post('/register', async (req, res) => {
         
         // If username doesn't exist, insert the new user into the database
         await users.insertOne({ username: register_username, password: register_password });
-        res.send('Registration successful!');
+        res.send(`
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Button Example</title>
+        </head>
+        <body>
+        Registration Successful!
+            <a href="/">Back</a>
+        </body>
+        </html>
+        `);
     } catch (error) {
         console.error('Error registering user:', error);
-        res.status(500).send('Error registering user. Please try again.');
+        res.status(500).send(`<html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Button Example</title>
+        </head>
+        <body>
+        Error registering user, please try again.
+            <a href="/">Back</a>
+        </body>
+        </html>Error registering user. Please try again.`);
     }
 });
 
-// Route to set cookies
-app.get('/setcookie', function (req, res) {
-    console.log('setcookie');
-    res.cookie('name', 'Abcd'); // Sets name = Abcd, no expiration
-    res.cookie('cook2', 'xyz', { maxAge: 20000 }); // Sets cook2 = xyz expiring in 20 seconds
-    res.send('Cookies set '); // Complete sending
+// Login route
+app.post('/login', async (req, res) => {
+    try {
+        const database = client.db('WesleyDB'); // Change to your database name
+        const users = database.collection('users');
+        
+        // Extract username and password from request body
+        const { login_username, login_password } = req.body;
+        
+        // Check if the provided credentials exist in the database
+        const user = await users.findOne({ username: login_username, password: login_password });
+        if (!user) {
+            // Unsuccessful login
+            return res.status(401).send('Invalid username or password. <a href="/">Go back</a>');
+        }
+        
+        // Successful login
+        // Generate authentication cookie (assuming 'auth' is the cookie name)
+        res.cookie('auth', 'your_authentication_token', { maxAge: 20000 }); // Adjust expiration time as needed
+        res.send('Login successful! Authentication cookie set. <a href="/">Go back</a>');
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).send('Error logging in. Please try again.');
+    }
+});
+
+// Cookie Reporting Endpoint
+app.get('/cookie-report', function(req, res) {
+    const cookies = req.cookies;
+    let cookieList = '<h2>Active Cookies:</h2><ul>';
+    for (const [name, value] of Object.entries(cookies)) {
+        cookieList += `<li>${name}: ${value}</li>`;
+    }
+    cookieList += '</ul>';
+    res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cookie Reporting</title>
+    </head>
+    <body>
+        ${cookieList}
+        <a href="/clear-cookies">Clear Cookies</a> | <a href="/">Home</a>
+    </body>
+    </html>
+    `);
+});
+
+// Cookie Clearing Endpoint
+app.get('/clear-cookies', function(req, res) {
+    res.clearCookie('auth');
+    // Add additional cookie clearing if needed
+
+    res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cookie Cleared</title>
+    </head>
+    <body>
+        <p>All cookies cleared.</p>
+        <a href="/cookie-report">View Active Cookies</a> | <a href="/">Home</a>
+    </body>
+    </html>
+    `);
 });
