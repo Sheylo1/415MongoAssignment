@@ -1,5 +1,5 @@
-var cookieMonster = require('cookie-parser')
-const { MongoClient } = require("mongodb");
+// var cookieMonster = require('cookie-parser')
+// const { MongoClient } = require("mongodb");
 
 // The uri string must be the connection string for the database (obtained on Atlas).
 const uri = "mongodb+srv://wesleyaustin2:1ci83VF1g3thllUC@cluster0.akis8d8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
