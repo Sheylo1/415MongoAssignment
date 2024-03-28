@@ -1,26 +1,24 @@
-// Require necessary packages
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const { MongoClient } = require("mongodb");
 
-// Connect to MongoDB Atlas
+
 const uri = "mongodb+srv://wesleyaustin2:1ci83VF1g3thllUC@cluster0.akis8d8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Initialize Express app
+
 const app = express();
 const port = 3000;
 
-// Start server
 app.listen(port, () => {
     console.log('Server started at http://localhost:' + port);
 });
 
-// Middleware
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser());
 
-// Connect to MongoDB
+
 client.connect(err => {
     if (err) {
         console.error('Error connecting to MongoDB', err);
@@ -29,9 +27,7 @@ client.connect(err => {
     }
 });
 
-// Homepage route
 app.get('/', function(req, res) {
-    // Check if the authentication cookie exists
     const authCookie = req.cookies.auth;
 
     let authMessage = '';
@@ -81,22 +77,18 @@ app.get('/', function(req, res) {
     `);
 });
 
-// Register route
 app.post('/register', async (req, res) => {
     try {
         const database = client.db('WesleyDB'); // Change to your database name
         const users = database.collection('users');
         
-        // Extract username and password from request body
         const { register_username, register_password } = req.body;
         
-        // Check if the username already exists in the database
         const existingUser = await users.findOne({ username: register_username });
         if (existingUser) {
             return res.status(400).send('Username already exists');
         }
         
-        // If username doesn't exist, insert the new user into the database
         await users.insertOne({ username: register_username, password: register_password });
         res.send(`
         <html lang="en">
@@ -127,25 +119,19 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// Login route
 app.post('/login', async (req, res) => {
     try {
         const database = client.db('WesleyDB'); // Change to your database name
         const users = database.collection('users');
         
-        // Extract username and password from request body
         const { login_username, login_password } = req.body;
         
-        // Check if the provided credentials exist in the database
         const user = await users.findOne({ username: login_username, password: login_password });
         if (!user) {
-            // Unsuccessful login
             return res.status(401).send('Invalid username or password. <a href="/">Go back</a>');
         }
         
-        // Successful login
-        // Generate authentication cookie (assuming 'auth' is the cookie name)
-        res.cookie('auth', 'your_authentication_token', { maxAge: 20000 }); // Adjust expiration time as needed
+        res.cookie('auth', 'login_cookie', { maxAge: 20000 }); // Adjust expiration time as needed
         res.send('Login successful! Authentication cookie set. <a href="/">Go back</a>');
     } catch (error) {
         console.error('Error logging in:', error);
@@ -153,7 +139,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Cookie Reporting Endpoint
 app.get('/cookie-report', function(req, res) {
     const cookies = req.cookies;
     let cookieList = '<h2>Active Cookies:</h2><ul>';
@@ -177,10 +162,10 @@ app.get('/cookie-report', function(req, res) {
     `);
 });
 
-// Cookie Clearing Endpoint
+
 app.get('/clear-cookies', function(req, res) {
     res.clearCookie('auth');
-    // Add additional cookie clearing if needed
+
 
     res.send(`
     <!DOCTYPE html>
