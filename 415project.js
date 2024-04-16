@@ -238,9 +238,6 @@ app.get('/', (req, res) => {
             <h1>Welcome!</h1>
             <h2>Login or Register</h2>
             
-            <!-- Display authentication status -->
-            <p>${authMessage}</p>
-            
             <form action="/login" method="post">
                 <h3>Login</h3>
                 <label for="login_username">Username:</label>
