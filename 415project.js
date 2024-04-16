@@ -225,6 +225,49 @@ app.get('/messages/add', (req, res) => {
     `);
 });
 
+app.get('/', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Login or Register</title>
+        </head>
+        <body>
+            <h1>Welcome!</h1>
+            <h2>Login or Register</h2>
+            
+            <!-- Display authentication status -->
+            <p>${authMessage}</p>
+            
+            <form action="/login" method="post">
+                <h3>Login</h3>
+                <label for="login_username">Username:</label>
+                <input type="text" id="login_username" name="login_username" required><br>
+                <label for="login_password">Password:</label>
+                <input type="password" id="login_password" name="login_password" required><br>
+                <input type="submit" value="Login">
+            </form>
+            
+            <form action="/register" method="post">
+                <h3>Register</h3>
+                <label for="register_username">Username:</label>
+                <input type="text" id="register_username" name="register_username" required><br>
+                <label for="register_password">Password:</label>
+                <input type="password" id="register_password" name="register_password" required><br>
+                <input type="submit" value="Register">
+            </form>
+
+            <!-- Button to navigate to Login or Register page -->
+            <button onclick="window.location.href='/login'">Go to Login</button>
+            <button onclick="window.location.href='/register'">Go to Register</button>
+        </body>
+        </html>
+    `);
+});
+
+
 // 404 Route
 app.use((req, res) => {
     res.status(404).send("Page not found");
